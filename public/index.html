@@ -38,15 +38,63 @@
             background-color: #f8d7da;
             color: #721c24;
         }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        #debug-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            display: none;
+        }
+        .test-controls {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
     <h1>Apple Pay Demo with CardPointe</h1>
     
+    <div class="test-controls">
+        <h2>Test Controls</h2>
+        <p>Amount: <input type="text" id="amount" value="1.00"> USD</p>
+        <p>
+            <label>
+                <input type="checkbox" id="debug-mode"> 
+                Show Debug Information
+            </label>
+        </p>
+        <p>
+            <button id="check-availability">Check Apple Pay Availability</button>
+        </p>
+    </div>
+    
     <div id="apple-pay-button" style="display: none;"></div>
     <button id="apple-pay-button-fallback" disabled>Apple Pay</button>
     
     <div id="status"></div>
+    <div id="debug-info"></div>
+    
+    <div class="test-instructions">
+        <h2>Testing Instructions</h2>
+        <ol>
+            <li>This demo must be accessed via Safari on macOS or iOS</li>
+            <li>The page must be served over HTTPS (using ngrok or similar)</li>
+            <li>Click "Check Apple Pay Availability" to verify your browser supports Apple Pay</li>
+            <li>If available, an Apple Pay button will appear</li>
+            <li>Click the Apple Pay button to initiate a payment</li>
+            <li>Complete the payment in the Apple Pay sheet</li>
+            <li>Check the status area for the result</li>
+        </ol>
+    </div>
     
     <script src="https://applepay.cdn-apple.com/jsapi/v1/apple-pay-sdk.js"></script>
     <script src="js/app.js"></script>
