@@ -19,20 +19,46 @@ app.post('/validate-merchant', async (req, res) => {
   try {
     const { validationURL, domainName } = req.body;
     
-    // You'll need to replace these with your actual merchant credentials
-    const merchantId = 'merchant.your.domain.id';
+    // Your Apple Pay merchant credentials
+    const merchantId = 'merchant.your.domain.id'; // Replace with your actual merchant ID
     const merchantCertPath = path.join(__dirname, 'certs', 'merchant_id.pem');
     const merchantKeyPath = path.join(__dirname, 'certs', 'merchant_id.key');
     
-    // TODO: Implement merchant validation with Apple
-    // This typically involves sending the validationURL to Apple's servers
-    // along with your merchant certificate
+    // Read the certificate and private key
+    const fs = require('fs');
+    const cert = fs.readFileSync(merchantCertPath);
+    const key = fs.readFileSync(merchantKeyPath);
     
-    // For now, we'll return a placeholder response
-    res.json({ status: 'success', message: 'Merchant validated' });
+    // Create the validation request payload
+    const validationPayload = {
+      merchantIdentifier: merchantId,
+      displayName: 'Your Store Name', // Replace with your store name
+      initiative: 'web',
+      initiativeContext: domainName
+    };
+    
+    // Send the validation request to Apple
+    const response = await axios.post(validationURL, validationPayload, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      httpsAgent: new (require('https').Agent)({
+        cert: cert,
+        key: key,
+        passphrase: '' // Add passphrase if your key is encrypted
+      })
+    });
+    
+    // Return the validation session data to the client
+    console.log('Merchant validation successful');
+    res.json(response.data);
   } catch (error) {
     console.error('Merchant validation error:', error);
-    res.status(500).json({ status: 'error', message: error.message });
+    res.status(500).json({ 
+      status: 'error', 
+      message: error.message,
+      details: error.response ? error.response.data : null
+    });
   }
 });
 

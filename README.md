@@ -8,6 +8,7 @@ This is a Node.js application that demonstrates how to integrate Apple Pay with 
 - Apple Developer Account
 - Apple Pay Merchant ID
 - CardPointe merchant account and API credentials
+- macOS with Safari for testing (Apple Pay requires Safari on macOS or iOS devices)
 
 ## Setup
 
@@ -27,23 +28,71 @@ This is a Node.js application that demonstrates how to integrate Apple Pay with 
 
 4. Update the configuration in `app.js`:
    - Replace `merchant.your.domain.id` with your actual Apple Pay merchant ID
-   - Replace CardPointe API credentials with your actual credentials
+   - Replace `Your Store Name` with your actual store name
+   - Replace CardPointe API credentials with your actual credentials (if not using test credentials)
 
 5. Start the server:
    ```
    npm start
    ```
 
-## Apple Pay Requirements
+## Apple Pay Merchant Validation Setup
 
-- The website must be served over HTTPS
-- The domain must be registered with Apple for Apple Pay
-- For testing locally, you can use tools like ngrok to create a secure tunnel
+### 1. Register for an Apple Developer Account
+- Sign up at [developer.apple.com](https://developer.apple.com)
+- Enroll in the Apple Developer Program
+
+### 2. Register Your Domain with Apple
+- Log in to your Apple Developer account
+- Go to Certificates, Identifiers & Profiles
+- Select Merchant IDs from the Identifiers section
+- Create a new Merchant ID or select an existing one
+- Add your domain to the list of domains in the Apple Pay Processing section
+
+### 3. Create a Merchant Identity Certificate
+- In your Merchant ID settings, click "Create Certificate" under Apple Pay Processing
+- Follow the instructions to create a Certificate Signing Request (CSR) using Keychain Access on macOS
+- Upload the CSR to Apple
+- Download the generated certificate
+
+### 4. Convert the Certificate for Use with Node.js
+- Convert the downloaded certificate to PEM format:
+  ```
+  openssl x509 -inform der -in merchant_id.cer -out merchant_id.pem
+  ```
+- Export your private key from Keychain Access in p12 format
+- Convert the private key to PEM format:
+  ```
+  openssl pkcs12 -in merchant_id.p12 -nocerts -out merchant_id.key
+  ```
+
+### 5. Domain Verification
+- Create a domain verification file
+- Place it at `/.well-known/apple-developer-merchantid-domain-association` on your server
+- Verify your domain in the Apple Developer portal
+
+## Testing Requirements
+
+- **Browser/OS Requirements**: Apple Pay can only be tested on Safari (macOS) or iOS devices
+- **HTTPS Required**: Apple Pay requires a secure connection
+  - For local testing, use tools like [ngrok](https://ngrok.com/) to create a secure tunnel:
+    ```
+    ngrok http 3000
+    ```
+  - Update your domain in the Apple Developer portal with the ngrok URL
+- **Test Cards**: In the Apple Pay sandbox, you can use test cards provided by Apple
+- **CardPointe Test Environment**: The application is configured to use CardPointe's test environment (UAT)
 
 ## Implementation Details
 
 - The frontend uses the Apple Pay JS API to create a payment session
 - The backend handles merchant validation and processes payments through CardPointe
+- The merchant validation process:
+  1. When a user initiates Apple Pay, Apple sends a validation URL to your frontend
+  2. Your frontend sends this URL to your backend
+  3. Your backend makes a request to this URL with your merchant credentials
+  4. Apple validates your merchant identity and returns a session object
+  5. You send this session object back to the frontend to complete the validation
 - The CardPointe gateway is used to process the Apple Pay token
 
 ## Files
