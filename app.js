@@ -142,6 +142,11 @@ app.post('/process-payment', async (req, res) => {
   }
 });
 
+// Ensure the .well-known directory is accessible
+app.get('/.well-known/apple-developer-merchantid-domain-association', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', '.well-known', 'apple-developer-merchantid-domain-association'));
+});
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 }); 

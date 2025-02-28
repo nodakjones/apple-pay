@@ -66,10 +66,39 @@ This is a Node.js application that demonstrates how to integrate Apple Pay with 
   openssl pkcs12 -in merchant_id.p12 -nocerts -out merchant_id.key
   ```
 
-### 5. Domain Verification
-- Create a domain verification file
-- Place it at `/.well-known/apple-developer-merchantid-domain-association` on your server
-- Verify your domain in the Apple Developer portal
+### 5. Domain Verification with ngrok
+- Download the domain verification file from your Apple Developer account
+  - In your Merchant ID settings, click on "Download" next to your domain
+  - This downloads a file named `apple-developer-merchantid-domain-association` (no file extension)
+
+- Create the required directory structure in your project:
+  ```
+  mkdir -p public/.well-known
+  ```
+
+- Place the verification file in the correct location:
+  ```
+  cp /path/to/downloaded/apple-developer-merchantid-domain-association public/.well-known/
+  ```
+
+- Start your server and ngrok:
+  ```
+  npm start
+  # In a separate terminal
+  ngrok http 3000
+  ```
+
+- Copy the HTTPS URL provided by ngrok (e.g., `https://a1b2c3d4.ngrok.io`)
+
+- Register this ngrok URL in your Apple Developer account:
+  - Go to your Merchant ID settings
+  - Add the ngrok URL as a new domain (or update an existing one)
+  - Click "Verify Domain"
+
+- Apple will attempt to access `https://your-ngrok-domain/.well-known/apple-developer-merchantid-domain-association`
+- If everything is set up correctly, the domain should verify successfully
+
+- **Note**: Each time you restart ngrok, you'll get a new URL and will need to update it in your Apple Developer account
 
 ## Testing Requirements
 
@@ -100,4 +129,5 @@ This is a Node.js application that demonstrates how to integrate Apple Pay with 
 - `app.js` - Main server file
 - `public/index.html` - Frontend HTML
 - `public/js/app.js` - Frontend JavaScript
-- `certs/` - Directory for Apple Pay merchant certificates 
+- `certs/` - Directory for Apple Pay merchant certificates
+- `public/.well-known/` - Directory for Apple Pay domain verification 
