@@ -1,30 +1,39 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const statusElement = document.getElementById('status');
-    const applePayButton = document.getElementById('apple-pay-button');
-    const applePayButtonFallback = document.getElementById('apple-pay-button-fallback');
-    
-    // Check if Apple Pay is available
-    if (window.ApplePaySession && ApplePaySession.canMakePayments()) {
-        applePayButton.style.display = 'block';
-        applePayButtonFallback.style.display = 'none';
-        
-        // Create Apple Pay button
-        const applePayButtonElement = ApplePaySession.create({
-            buttonType: 'buy',
-            buttonColor: 'black'
-        });
-        applePayButton.appendChild(applePayButtonElement);
-        
-        // Add click event to the Apple Pay button
-        applePayButton.addEventListener('click', startApplePay);
-    } else {
-        // Show a message if Apple Pay is not available
-        applePayButtonFallback.textContent = 'Apple Pay is not available';
-        statusElement.textContent = 'Apple Pay is not available on this device or browser.';
-        statusElement.className = 'error';
-    }
-    
-    function startApplePay() {
+// document.addEventListener('DOMContentLoaded', () => {
+    // const statusElement = document.getElementById('status');
+    // const applePayButton = document.getElementById('apple-pay-button');
+    // const applePayButtonFallback = document.getElementById('apple-pay-button-fallback');
+    //
+    // // Check if Apple Pay is available
+    // if (window.ApplePaySession && ApplePaySession.canMakePayments()) {
+    //     applePayButton.style.display = 'block';
+    //     applePayButtonFallback.style.display = 'none';
+    //
+    //     // Create Apple Pay button
+    //     const applePayButtonElement = ApplePaySession.create({
+    //         buttonType: 'buy',
+    //         buttonColor: 'black'
+    //     });
+    //     applePayButton.appendChild(applePayButtonElement);
+    //
+    //     // Add click event to the Apple Pay button
+    //     applePayButton.addEventListener('click', startApplePay);
+    // } else {
+    //     // Show a message if Apple Pay is not available
+    //     applePayButtonFallback.textContent = 'Apple Pay is not available';
+    //     statusElement.textContent = 'Apple Pay is not available on this device or browser.';
+    //     statusElement.className = 'error';
+    // }
+    //
+    //
+    //
+    // function showStatus(message, type) {
+    //     statusElement.textContent = message;
+    //     statusElement.className = type;
+    // }
+// });
+
+function startApplePay() {
+    console.log('testing => ' + window.ApplePaySession);
         // Define the payment request
         const paymentRequest = {
             countryCode: 'US',
@@ -36,10 +45,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 amount: '1.00' // Replace with actual amount
             }
         };
-        
+
         // Create a new payment session
         const session = new ApplePaySession(6, paymentRequest);
-        
+
         // Handle merchant validation
         session.onvalidatemerchant = async (event) => {
             try {
@@ -53,8 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         domainName: window.location.hostname
                     })
                 });
-                
+
                 const merchantSession = await response.json();
+                console.log('Merchant session data:', merchantSession);
                 session.completeMerchantValidation(merchantSession);
             } catch (error) {
                 console.error('Merchant validation failed:', error);
@@ -62,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showStatus('Merchant validation failed: ' + error.message, 'error');
             }
         };
-        
+
         // Handle payment authorization
         session.onpaymentauthorized = async (event) => {
             try {
@@ -76,9 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         token: event.payment.token
                     })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.status === 'success') {
                     session.completePayment(ApplePaySession.STATUS_SUCCESS);
                     showStatus('Payment successful!', 'success');
@@ -92,13 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showStatus('Payment processing failed: ' + error.message, 'error');
             }
         };
-        
+
         // Begin the session
         session.begin();
     }
-    
-    function showStatus(message, type) {
-        statusElement.textContent = message;
-        statusElement.className = type;
-    }
-}); 
