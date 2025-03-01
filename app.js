@@ -63,6 +63,69 @@ app.post('/validate-merchant', async (req, res) => {
 });
 
 // Process Apple Pay payment
+app.post('/tokenize', async (req, res) => {
+    try {
+        // console.log('req => ' + JSON.stringify(req));
+        const {tokenizeRequest} = req.body;
+        console.log('tokenizeRequest => ' + JSON.stringify(tokenizeRequest));
+
+
+        // CardPointe API credentials
+        const cardPointeApiUrl = 'https://fts-uat.cardconnect.com/cardsecure/api/v1/ccn/tokenize';
+        const cardPointeMerchantId = '000000927997';
+        const cardPointeUsername = 'testing';
+        const cardPointePassword = 'testing123';
+
+        // Extract the payment data from the Apple Pay token
+        // The structure of the token follows Apple's documentation
+
+        // Format the request for CardPointe according to their Apple Pay documentation
+        // https://developer.fiserv.com/product/CardPointe/docs/?path=docs/documentation/ApplePayDeveloperGuide.md
+
+
+        console.log('Sending payment request to CardPointe:', JSON.stringify(tokenizeRequest, null, 2));
+
+        // Make the request to CardPointe
+        const response = await axios.post(cardPointeApiUrl, tokenizeRequest, {
+            auth: {
+                username: cardPointeUsername,
+                password: cardPointePassword
+            },
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+
+        console.log('CardPointe response:', response.data);
+
+        // Check the response from CardPointe
+        if (response.data.respstat === 'A') {
+            // Approved
+            res.json({
+                status: 'success',
+                message: 'Payment approved',
+                transaction: response.data
+            });
+        } else {
+            // Declined or error
+            res.json({
+                status: 'error',
+                message: `Payment declined: ${response.data.resptext || 'Unknown error'}`,
+                transaction: response.data
+            });
+        }
+    } catch (error) {
+        console.error('Payment processing error:', error);
+        res.status(500).json({
+            status: 'error',
+            message: error.message,
+            details: error.response ? error.response.data : null
+        });
+    }
+});
+
+// Process Apple Pay payment
 app.post('/process-payment', async (req, res) => {
     try {
         const {token} = req.body;
